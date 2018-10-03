@@ -1,0 +1,8 @@
+*~
+.#*
+.nrepl-history
+.nrepl-port
+target/
+out/
+junit-out/
+resources/config.edn

@@ -1,0 +1,15 @@
+{:secret "a random 40 to 50 char string"
+ ;; Database Configuration
+ :db {:dbtype   "postgresql" ;; Type = postgresql | mariadb | mssql 
+      :dbname   "rtrac"     
+      :host     "localhost"
+      :port     5432
+      :user     "dbuser"
+      :password "dbpass"
+      :schema   "rtrac"}
+ 
+ ;; Reddit Configuration
+ :reddit {:user     "reddit-user"
+          :password "reddit-user-password"
+          :clientid "reddit-app-client-id"
+          :secret   "reddit-app-secret"}}
