@@ -23,7 +23,7 @@
   [data]
   (log/debug "create watch" data)
   (wrap-response 
-   (db/create-entity :watch-subreddit data)))
+   (db/create-entity :watch-subreddit (assoc data :active false))))
 
 (defn validate-watch [id email token]
   (log/debug "validate watch" id email token)
