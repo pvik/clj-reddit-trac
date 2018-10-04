@@ -81,14 +81,17 @@
         (log/debug "count:" posts-count "after: " aft)
         (clojure.pprint/pprint posts)
         (if (and before cont)
-          (apply conj posts
+          (apply conj (vec posts)
                  (get-subreddit-posts subreddit type
                                       {:limit l
                                        :data-keys data-keys
                                        :before before
                                        :after aft}))
           (if before
-            (take-while #(not (= before (:name %))) posts)
-            posts))))))
+            (vec (take-while #(not (= before (:name %))) posts))
+            (vec posts)))))))
+
+(defn print-token []
+  @token)
 
 ;; (reddit-trac.reddit/get-subreddit-posts "buildapcsales" :new {:limit 3 :data-keys [:id :name :author :url :permalink :title :created :link_flair_text] :before "t3_9l60e9"})
