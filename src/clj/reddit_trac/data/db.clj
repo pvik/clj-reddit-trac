@@ -167,17 +167,18 @@
   ((comp insert
          #(q/create-entity entity %)) data))
 
-(defn get-entity [entity where-clause & [fs]]
+(defn get-entity [entity where-clause & [fs limit page]]
   ((comp
     ;;first
     query
-    #(q/get-entity entity % fs)) where-clause))
+    #(q/get-entity entity % fs limit page)) where-clause))
 
-(defn get-entity-distinct [entity where-clause & [fs]]
+(defn get-entity-distinct [entity where-clause & [fs limit page]]
+  (log/debug " - " where-clause " | " fs)
   ((comp
     ;;first
     query
-    #(q/get-entity-distinct entity % fs)) where-clause))
+    #(q/get-entity-distinct entity % fs limit page)) where-clause))
 
 (defn update-entity [entity data]
   ((comp execute

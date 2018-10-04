@@ -1,6 +1,6 @@
 (ns reddit-trac.data.query
   (:require [honeysql.helpers
-             :refer [merge-where where sset insert-into values order-by]
+             :refer [merge-where where sset insert-into values order-by modifiers]
              :as helpers]
             [clojure.string :as str]
             [taoensso.timbre   :as log]))
@@ -24,17 +24,15 @@
     (assoc query :offset offset)
     query))
 
-(defn select [tbl {:keys [fields limit page order]}]
+(defn select [tbl {:keys [fields limit page]}]
   (let [fs     (or fields [:*])
         lmt    (or limit pg-limit)
-        offset (if page (* (- page 1) lmt) nil)
-        ord    (or order :desc)]
+        offset (if page (* (- page 1) lmt) nil)]
     (log/debug "select" fs "from" tbl)
     (-> {:select fs
          :from   [(table-name tbl)]}
         (set-query-limit lmt)
-        (set-query-offset offset)
-        (order-by [:id :desc]))))
+        (set-query-offset offset))))
 
 ;; Entity
 
@@ -43,12 +41,13 @@
    (insert-into (table-name entity))
    (values [data])))
 
-(defn get-entity [entity & [where-clause fs]]
-  (-> (select entity fs)
-      (merge-where where-clause)))
+(defn get-entity [entity & [where-clause fs limit page]]
+  (-> (select entity {:fields fs :limit limit :page page})
+      (merge-where where-clause)
+      (order-by [:id :desc])))
 
-(defn get-entity-distinct [entity & [where-clause fs]]
-  (-> (select entity fs)
+(defn get-entity-distinct [entity & [where-clause fs limit page]]
+  (-> (select entity {:fields fs :limit limit :page page})
       (modifiers :distinct)
       (merge-where where-clause)))
 
