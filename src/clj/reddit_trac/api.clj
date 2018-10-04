@@ -22,7 +22,8 @@
   TODO send email to validate watch"
   [data]
   (log/debug "create watch" data)
-  (wrap-response 
+  (wrap-response
+   ;; TODO: lower all string columns
    (db/create-entity :watch-subreddit (assoc data :active false))))
 
 (defn validate-watch [id email token]
