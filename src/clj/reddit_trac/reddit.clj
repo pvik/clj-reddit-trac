@@ -91,7 +91,6 @@
             (vec (take-while #(not (= before (:name %))) posts))
             (vec posts)))))))
 
+;; TODO: remove, only for debugging
 (defn print-token []
   @token)
-
-;; (reddit-trac.reddit/get-subreddit-posts "buildapcsales" :new {:limit 3 :data-keys [:id :name :author :url :permalink :title :created :link_flair_text] :before "t3_9l60e9"})
