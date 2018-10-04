@@ -9,7 +9,7 @@
   [:id :name :subreddit :author :url :permalink :domain :title
    :created :link_flair_text])
 
-(def subreddit-before-name (atom {}))
+(defonce subreddit-before-name (atom {}))
 
 (defn watch-matches-post? [watch post]
   (let [keywords (str/split (:keywords watch) #" ")
@@ -27,6 +27,18 @@
        (str/includes? (:domain post) (:ignore-domain post))
        true))))
 
+(defn merge-map-by-email [m [eml ws ps]]
+  (let [m-eml (or (eml m) {})
+        m-watches (:watches m-eml)
+        m-posts (:posts m-eml)]
+    (assoc m eml {:watches (apply conj m-watches ws)
+                  :posts (apply conj m-posts ps)})))
+
+(defn merge-map [m1 m2]
+  (reduce
+   #(merge-map-by-email % [%2 (:watches (%2 m2)) (:posts (%2 m2))])
+   m1 (keys m2)))
+
 (defn trac-by-subreddit [subreddit]
   (let [kw-subreddit (keyword subreddit)
         posts (r/get-subreddit-posts
@@ -37,19 +49,16 @@
         watches (db/get-entity :watch-subreddit
                                [:and [:= :active true]
                                 [:= :subreddit subreddit]]
-                               [:id :keywords, :ignore-keywords, :ignore-domain, :check-flair, :email]
+                               [:id :keywords, :ignore-keywords,
+                                :ignore-domain, :check-flair,
+                                :email :subreddit]
                                :no-limit)]
     (if (> (count posts) 0)
       (do
         (swap! subreddit-before-name assoc kw-subreddit first-post-name)
         (reduce
          ;; compress results per email
-         (fn [m [eml ws ps]]
-           (let [m-eml (or (eml m) {})
-                 m-watches (:watches m-eml)
-                 m-posts (:posts m-eml)]
-             (assoc m eml {:watches (apply conj m-watches ws)
-                           :posts (apply conj m-posts ps)})))
+         merge-map-by-email
          {}
          ;; seq of sequences which match posts for each watch
          (for [w watches
@@ -64,6 +73,9 @@
         (map :subreddit (db/get-entity-distinct :watch-subreddit
                                                 [:= :active true]
                                                 [:subreddit]
-                                                :no-limit))]
-    (for [sr subreddits]
-      (log/debug "Processing" sr))))
+                                                :no-limit))
+        matches (for [sr subreddits] (trac-by-subreddit sr))]
+    (reduce
+     (fn [m1 m2]
+       (merge-map m1 m2))
+     (first matches) (rest matches))))
