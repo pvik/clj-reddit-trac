@@ -47,6 +47,11 @@
   (-> (select entity fs)
       (merge-where where-clause)))
 
+(defn get-entity-distinct [entity & [where-clause fs]]
+  (-> (select entity fs)
+      (modifiers :distinct)
+      (merge-where where-clause)))
+
 (defn update-entity [entity data]
   (->
    (helpers/update (table-name entity))
