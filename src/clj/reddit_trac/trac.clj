@@ -9,7 +9,13 @@
   [:id :name :subreddit :author :url :permalink :domain :title
    :created :link_flair_text])
 
-(defonce subreddit-before-name (atom {}))
+(defonce subreddit-before-name
+  (atom
+   (try
+     (clojure.edn/read-string (slurp "resources/cache.edn"))
+     (catch Exception e
+       ;; use an empty map on exception
+       {}))))
 
 (defn watch-matches-post? [watch post]
   (let [keywords (str/split (:keywords watch) #" ")
@@ -78,4 +84,5 @@
     (reduce
      (fn [m1 m2]
        (merge-map m1 m2))
-     (first matches) (rest matches))))
+     (first matches) (rest matches))
+    (spit "resources/cache.edn" (pr-str @subreddit-before-name))))
