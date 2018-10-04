@@ -173,6 +173,12 @@
     query
     #(q/get-entity entity % fs)) where-clause))
 
+(defn get-entity-distinct [entity where-clause & [fs]]
+  ((comp
+    ;;first
+    query
+    #(q/get-entity-distinct entity % fs)) where-clause))
+
 (defn update-entity [entity data]
   ((comp execute
          #(q/update-entity entity %)) data))
