@@ -34,12 +34,16 @@
                  [nrepl "0.4.5" :scope "test"]
                  [weasel "0.7.0" :scope "test"]
                  [ragtime "0.7.2" :scope "test"] ;; Migrations
-                 [mbuczko/boot-ragtime "0.3.1" :scope "test"]])
+                 [mbuczko/boot-ragtime "0.3.1" :scope "test"]
+                 [samestep/boot-refresh "0.1.0" :scope "test"]])
 
 (require 
  '[pandeiro.boot-http :refer [serve]]
  '[adzerk.boot-reload :refer [reload]]
- '[mbuczko.boot-ragtime :refer [ragtime]])
+ '[mbuczko.boot-ragtime :refer [ragtime]]
+ '[samestep.boot-refresh :refer [refresh]])
+
+(def +version+ "0.1.0")
 
 (def db-opts (:db (clojure.edn/read-string (slurp "resources/config.edn"))))
 (task-options!
@@ -49,7 +53,13 @@
                          (:password db-opts) "@"
                          (:host db-opts) ":"
                          (:port db-opts) "/"
-                         (:dbname db-opts))})
+                         (:dbname db-opts))}
+ pom {:project 'pvik/reddit-trac
+      :version +version+
+      :description "Boot task to reload code using clojure.tools.namespace."
+      :url "https://github.com/samestep/boot-refresh"
+      :scm {:url "https://github.com/samestep/boot-refresh"}
+      :license {"MIT License" "https://opensource.org/licenses/MIT"}})
 
 
 (deftask dev
@@ -62,3 +72,13 @@
    (watch)
    (reload)
    (target :dir #{"target"})))
+
+(deftask dev-repl
+  "dev repl process"
+  []
+  (comp
+   (watch)
+   (repl :server true)
+   (pom)
+   (jar)
+   (install)))
