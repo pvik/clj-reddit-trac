@@ -12,17 +12,17 @@
 (def subreddit-before-name (atom {}))
 
 (defn watch-matches-post? [watch post]
-  (let [keywords (set (str/split (:keywords watch) #" "))
+  (let [keywords (str/split (:keywords watch) #" ")
         ignore   (if (:ignore-keywords watch)
-                   (set (str/split (:ignore-keywords watch) #" "))
-                   #{})
+                   (str/split (:ignore-keywords watch) #" ")
+                   [])
         search-str (str/lower-case
                     (if (:check-flair watch)
                       (str (:title post) (:link_flair_text post))
                       (:title post)))]
     (and
-     (some keywords (clojure.string/split search-str #" "))
-     (not (some ignore (clojure.string/split search-str #" ")))
+     (some #(str/includes? search-str %) keywords)
+     (not (some #(str/includes? search-str %) ignore))
      (if (:ignore-domain post)
        (str/includes? (:domain post) (:ignore-domain post))
        true))))
