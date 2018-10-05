@@ -1,4 +1,29 @@
 {:secret "a random 40 to 50 char string"
+ 
+ ;; trac-interval controls how frequently new posts in reddit will be
+ ;; checked.
+ ;; This a vector of values less than 60.
+ ;; Defines minute points when to trac values in an hour.
+ ;; ex:
+ ;; [30] will trac on the following time:
+ ;; [start-time
+ ;;    (start-time + 30 minutes)
+ ;;    (start-time + 1 hour + 30 minutes)
+ ;;    (start-time + 2 hours + 30 minutes)
+ ;;     ...]
+ ;;
+ ;; [15 45] will trac on the following time:
+ ;; [start-time
+ ;;    (start-time + 15 minutes)
+ ;;    (start-time + 45 minutes)
+ ;;    (start-time + 1 hour + 15 minutes)
+ ;;    (start-time + 1 hour + 45 minutes)
+ ;;    (start-time + 2 hours + 15 minutes)
+ ;;    (start-time + 2 hours + 45 minutes)
+ ;;     ...]
+ ;; 
+ :trac-interval [40]
+ 
  ;; Database Configuration
  :db {:dbtype   "postgresql" ;; Type = postgresql | mariadb | mssql 
       :dbname   "rtrac"     
@@ -12,4 +37,8 @@
  :reddit {:user     "reddit-user"
           :password "reddit-user-password"
           :clientid "reddit-app-client-id"
-          :secret   "reddit-app-secret"}}
+          :secret   "reddit-app-secret"}
+
+ ;; jetty api-server
+ :api-server {:enabled true
+              :port 3000}}
