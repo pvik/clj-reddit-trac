@@ -11,7 +11,7 @@
   "Generate SHA-1 of data appended with secret
   and get the last 10 characters"
   [data]
-  (subs (sha-1 (str data secret)) 30))
+  (sha-1 (str data secret)))
 
 (defn wrap-response [body & [status error?]]
   {:status (or status 200)
