@@ -78,7 +78,7 @@
                     "&token=" token)}
      "here"] "."]))
 
-(defn watch-found [{:keys [watches posts]}]
+(defn watch-found [{:keys [watches posts token]}]
   (html
    [:h4 {:style "font-weight:bolder;"} "Posts Trac'ed on Reddit!!"]
    (post-table posts)
@@ -86,11 +86,10 @@
    (watch-table watches)
    [:br]
    [:p "Note: All times above are relative to when the email was sent."]
-   ;; [:p "To manage all your Trac's please click "
-   ;;  [:a {:href (str uri "/watch/manage/"
-   ;;                  {:id watch}
-   ;;                  "?email=" (:email watch)
-   ;;                  "&token=" token)}
-   ;;   "here"] "."]
-   ))
+   [:p "To manage all your Trac's please click "
+    [:a {:href (str uri "/watch/manage/"
+                    {:id watch}
+                    "?email=" (:email (first watches))
+                    "&token=" token)}
+     "here"] "."]))
 
