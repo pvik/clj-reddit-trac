@@ -12,9 +12,12 @@
                  [org.clojure/core.async "0.4.474"]
                  [clj-time "0.14.4"]
                  [clj-http "3.9.1"]
+                 [jarohen/chime "0.2.2"] ;; scheduler
                  [org.clojure/data.json "0.2.6"]
                  [org.clojure/data.codec "0.1.1"] ;; Base64
-                 [digest "1.4.8"]
+                 [digest "1.4.8"] ;; sha-1
+                 [com.draines/postal "2.0.2"]
+                 [hiccup "1.0.5"]
                  ;; db
                  [hikari-cp "2.6.0"]    ;; Connection Pooling
                  [org.clojure/java.jdbc "0.7.8"]
@@ -41,7 +44,8 @@
  '[pandeiro.boot-http :refer [serve]]
  '[adzerk.boot-reload :refer [reload]]
  '[mbuczko.boot-ragtime :refer [ragtime]]
- '[samestep.boot-refresh :refer [refresh]])
+ '[samestep.boot-refresh :refer [refresh]]
+ 'reddit-trac.core)
 
 (def +version+ "0.1.0")
 
@@ -61,17 +65,30 @@
       :scm {:url "https://github.com/samestep/boot-refresh"}
       :license {"MIT License" "https://opensource.org/licenses/MIT"}})
 
+(deftask run []
+  (with-pass-thru _
+    (reddit-trac.core/-main)))
 
 (deftask dev
   "Launch Immediate Feedback Development Environment"
   []
   (comp
    (serve :handler 'reddit-trac.core/app ;; ring handler
-          :resource-root "target"            ;; root classpath
-          :reload true)                      ;; reload ns
+          :resource-root "target"        ;; root classpath
+          :reload true)                  ;; reload ns
    (watch)
    (reload)
    (target :dir #{"target"})))
+
+(deftask build
+  "Builds an uberjar of this project that can be run with java -jar"
+  []
+  (comp
+   (aot :all true)
+   (uber)
+   (jar :file "reddit-trac.jar" :main 'reddit-trac.core)
+   (sift :include #{#"reddit-trac.jar"})
+   (target)))
 
 (deftask dev-repl
   "dev repl process"

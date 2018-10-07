@@ -4,7 +4,8 @@
             [clj-time.core      :as t]
             [clj-time.coerce    :as tc]
             [taoensso.timbre    :as log]
-            [reddit-trac.helper :as h]))
+            [reddit-trac.helper :as h])
+  (:gen-class))
 
 (defonce ^:private ^:const props
   (:reddit (clojure.edn/read-string (slurp "resources/config.edn"))))
@@ -15,7 +16,7 @@
 (defonce ^:private ^:const user-agent
   (str "clojure:org.pvik.reddit-trac:v1 (by /u/" (:user props) ")"))
 
-(defonce ^:private ^:const default-limit 50)
+(defonce ^:private ^:const default-limit 100)
 
 (defonce ^:private token (atom {}))
 
@@ -79,8 +80,11 @@
                           (some #(= before (:name %)) posts)))
             aft    ((comp :after :data) body)]
         (log/debug "count:" posts-count "after: " aft)
-        (clojure.pprint/pprint posts)
-        (if (and before cont)
+        ;;(clojure.pprint/pprint posts)
+        (if (and before
+                 cont   ;; before name doesn't exist in the listing
+                 (not (nil? aft)) ;; after name is not nil in listing
+                 (= posts-count l)) 
           (apply conj (vec posts)
                  (get-subreddit-posts subreddit type
                                       {:limit l

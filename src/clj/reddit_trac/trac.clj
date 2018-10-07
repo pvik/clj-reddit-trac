@@ -1,13 +1,21 @@
 (ns reddit-trac.trac
-  (:require [clojure.core.async :refer [go]]
+  (:require [clojure.core.async :refer [go-loop <!! <!]]
+            [clojure.string :as str]
+            [clj-time.core :as t]
+            [chime :as c]
+            [taoensso.timbre :as log]
             [reddit-trac.data.db :as db]
             [reddit-trac.reddit  :as r]
-            [taoensso.timbre :as log]
-            [clojure.string :as str]))
+            [reddit-trac.notify.mail :as notify]
+            [reddit-trac.notify.template :as template])
+  (:gen-class))
 
 (def ^:const ^:private post-fields
   [:id :name :subreddit :author :url :permalink :domain :title
    :created :link_flair_text])
+
+(defonce ^:const trac-interval
+  (:trac-interval (clojure.edn/read-string (slurp "resources/config.edn"))))
 
 (defonce subreddit-before-name
   (atom
@@ -80,9 +88,30 @@
                                                 [:= :active true]
                                                 [:subreddit]
                                                 :no-limit))
-        matches (for [sr subreddits] (trac-by-subreddit sr))]
-    (reduce
-     (fn [m1 m2]
-       (merge-map m1 m2))
-     (first matches) (rest matches))
-    (spit "resources/cache.edn" (pr-str @subreddit-before-name))))
+        matches        (for [sr subreddits] (trac-by-subreddit sr))
+        merged-matches (reduce
+                        (fn [m1 m2]
+                          (merge-map m1 m2))
+                        (first matches) (rest matches))
+        _ (clojure.pprint/pprint merged-matches)]    
+    (spit "resources/cache.edn" (pr-str @subreddit-before-name))
+    (doall
+     (map #(if (:posts (second %))
+             (do
+               (log/debug "FOUND POSTS!")
+               (notify/send-mail {:to (name (first %))
+                                  :subject "Reddit-Trac: Posts found!"
+                                  :body (template/watch-found (second %))})))
+          merged-matches))))
+
+(defn trac-sched []
+  (trac) ;; initial run
+  (let [chimes (c/chime-ch (map #(t/from-now (t/minutes %))
+                                (for [r    (range)
+                                      intr trac-interval]
+                                  (+ (* r 60) intr))))]
+    (<!! (go-loop []
+           (when-let [chiming-at (<! chimes)]
+             (prn "Trac'ing at:" chiming-at)
+             (trac)
+             (recur))))))

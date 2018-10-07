@@ -4,7 +4,8 @@
             [ring.util.response :refer [response]]
             [taoensso.timbre    :as    log]
             [reddit-trac.api    :as    api]
-            [reddit-trac.helper :as    h]))
+            [reddit-trac.helper :as    h])
+  (:gen-class))
 
 (defroutes api-routes
   (context "/api" {body :body}

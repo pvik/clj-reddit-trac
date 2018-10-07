@@ -1,7 +1,8 @@
 (ns reddit-trac.api
   (:require [digest :refer [sha-1]]
             [taoensso.timbre     :as log]
-            [reddit-trac.data.db :as db]))
+            [reddit-trac.data.db :as db])
+  (:gen-class))
 
 (defonce ^:private ^:const secret
   (:secret (clojure.edn/read-string (slurp "resources/config.edn"))))

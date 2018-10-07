@@ -1,4 +1,5 @@
-(ns reddit-trac.helper)
+(ns reddit-trac.helper
+  (:gen-class))
 
 (defn as-int [int-str]
   (java.lang.Integer/parseInt int-str))
