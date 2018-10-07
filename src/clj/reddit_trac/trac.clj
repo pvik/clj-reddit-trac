@@ -12,7 +12,7 @@
 
 (def ^:const ^:private post-fields
   [:id :name :subreddit :author :url :permalink :domain :title
-   :created :link_flair_text])
+   :created_utc :link_flair_text])
 
 (defonce ^:const trac-interval
   (:trac-interval (clojure.edn/read-string (slurp "resources/config.edn"))))

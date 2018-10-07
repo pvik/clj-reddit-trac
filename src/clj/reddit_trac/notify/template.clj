@@ -1,43 +1,46 @@
 (ns reddit-trac.notify.template
   (:require [hiccup.core     :refer [html]]
+            [clj-time.core :as t]
             [clj-time.coerce :as c]
-            [clj-time.format :as f]
             [taoensso.timbre :as log])
   (:gen-class))
 
 (defonce ^:private ^:const uri
   (:uri (clojure.edn/read-string (slurp "resources/config.edn"))))
 
-(def time-formatter (f/formatter "yyyy-MM-dd HH:mm"))
-
 (defn watch-table [watch]
-  [:table
-   [:tr
-    [:td "Subreddit"]
-    [:td "Keywords"]]
+  [:table {:style "border-collapse: collapse; font-family: Arial, Verdana, sans-serif;"}
+   [:tr 
+    [:th {:style "border:1px solid black"} "Subreddit"]
+    [:th {:style "border:1px solid black"} "Keywords"]]
    (for [w watch]
      [:tr
-      [:td
+      [:td {:style "border:1px solid black"}
        [:a {:href (str "https://www.reddit.com/r/"(:subreddit w))}
         (str "/r/" (:subreddit w))]]
-      [:td (:keywords w)]])])
+      [:td {:style "border:1px solid black"}
+       (:keywords w)]])])
 
 (defn post-table [posts]
-  [:table
+  [:table {:style "border-collapse: collapse; font-family: Arial, Verdana, sans-serif;"}
    (for [p posts]
-     [:tr
-      [:td
+     [:tr {:style "border:1px solid Gray"}
+      [:td {:style "border:1px solid Gray"}
        [:a {:href (str "https://www.reddit.com/r/"(:subreddit p))}
         (str "/r/" (:subreddit p))]]
-      [:td
+      [:td {:style "border:1px solid Gray"}
        (if (:link_flair_text p)
          (str "[" (:link_flair_text p) "] "))
        [:a {:href (:url p)} (:title p)]
-       (str " (" (:domain p) ")")
-       [:br]
-       (str " posted at "
-            (f/unparse time-formatter (c/from-long (long (* 1000 (:created p))))) " GMT")]
-      [:td [:a {:href (str "https://www.reddit.com" (:permalink p))} "comments"]]])])
+       [:p {:style "color:Gray; font-size:0.8em"}
+        (str " (" (:domain p) ") ")
+        (str " posted "
+             (t/in-minutes
+              (t/interval
+               (c/from-long (long (* 1000 (:created_utc p)))) (t/now)))
+             " minutes ago")]]
+      [:td {:style "border:1px solid Gray"}
+       [:a {:href (str "https://www.reddit.com" (:permalink p))} "comments"]]])])
 
 (defn watch-validate [{:keys [token watch]}]
   (html
@@ -77,11 +80,12 @@
 
 (defn watch-found [{:keys [watches posts]}]
   (html
-   [:h4 "Posts Trac'ed on Reddit!!"]
+   [:h4 {:style "font-weight:bolder;"} "Posts Trac'ed on Reddit!!"]
    (post-table posts)
    [:p  "Your active Tracs"]
    (watch-table watches)
    [:br]
+   [:p "Note: All times above are relative to when the email was sent."]
    ;; [:p "To manage all your Trac's please click "
    ;;  [:a {:href (str uri "/watch/manage/"
    ;;                  {:id watch}
