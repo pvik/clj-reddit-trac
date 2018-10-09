@@ -39,6 +39,9 @@
           :clientid "reddit-app-client-id"
           :secret   "reddit-app-secret"}
 
+ :email {:from "\"Reddit-Trac\" <sample@reddit-trac.com>"}
+ 
  ;; jetty api-server
+ :uri "https://www.reddit-trac.com"
  :api-server {:enabled true
-              :port 3000}}
+              :port 80}}
