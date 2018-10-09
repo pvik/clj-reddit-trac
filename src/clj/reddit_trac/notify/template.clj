@@ -51,7 +51,8 @@
      {:href (str uri "/watch/validate/"
                  {:id watch}
                  "?email=" (:email watch)
-                 "&token=" token)}
+                 "&token=" token
+                 "&id=" (:id watch))}
      "here"]
     ". If not please ignore/delete this email."]
    (watch-table watch)
@@ -69,7 +70,8 @@
     [:a {:href (str uri "/watch/delete/"
                     {:id watch}
                     "?email=" (:email watch)
-                    "&token=" token)}
+                    "&token=" token
+                    "&id=" (:id watch))}
      "here"] "."]
    [:p "To manage all your Trac's please click "
     [:a {:href (str uri "/watch/manage/"
