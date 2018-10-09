@@ -73,7 +73,8 @@
   "Launch Immediate Feedback Development Environment"
   []
   (comp
-   (serve :handler 'reddit-trac.core/app ;; ring handler
+   (serve :port 3001
+          :handler 'reddit-trac.core/app ;; ring handler
           :resource-root "target"        ;; root classpath
           :reload true)                  ;; reload ns
    (watch)

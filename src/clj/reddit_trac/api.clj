@@ -1,7 +1,9 @@
 (ns reddit-trac.api
   (:require [digest :refer [sha-1]]
             [taoensso.timbre     :as log]
-            [reddit-trac.data.db :as db])
+            [reddit-trac.data.db :as db]
+            [reddit-trac.notify.mail :as notify]
+            [reddit-trac.notify.template :as template])
   (:gen-class))
 
 (defonce ^:private ^:const secret
@@ -23,9 +25,15 @@
   TODO send email to validate watch"
   [data]
   (log/debug "create watch" data)
-  (wrap-response
-   ;; TODO: lower all string columns
-   (db/create-entity :watch-subreddit (assoc data :active false))))
+  (let [watch (db/create-entity :watch-subreddit
+                                (assoc data :active false))]) ;; TODO: lower all string columns
+  ;; send email
+  (notify/send-mail {:to (:email watch)
+                     :subject "New Reddit-Trac Created"
+                     :body (template/watch-validate
+                            {:token (gen-token (:email watch))
+                             :watch watch})})
+  (wrap-response watch))
 
 (defn validate-watch [id email token]
   (log/debug "validate watch" id email token)
@@ -34,6 +42,13 @@
       (db/update-entity :watch-subreddit
                         {:id id
                          :active true})
+      ;; send email
+      (let [watch (db/get-entity :watch-subreddit [:= :id id])]
+        (notify/send-mail {:to email
+                           :subject "New Reddit-Trac "
+                           :body (template/watch-success
+                                  {:token (gen-token (:email watch))
+                                   :watch watch})}))
       (wrap-response {:message "ok"}))
     (wrap-response "invalid token" 401 :error)))
 
