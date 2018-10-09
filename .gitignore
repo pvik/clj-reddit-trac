@@ -6,3 +6,4 @@ target/
 out/
 junit-out/
 resources/config.edn
+resources/cache.edn
