@@ -3,6 +3,7 @@
             [ring.middleware.json :refer [wrap-json-response
                                           wrap-json-body]]
             [ring.adapter.jetty :refer [run-jetty]]
+            [ring.middleware.cors :refer [wrap-cors]]
             [taoensso.timbre :as log]
             [reddit-trac.routes  :refer [app-routes]]
             [reddit-trac.trac  :refer [trac-sched]])
@@ -16,8 +17,14 @@
     (log/info "Initializing Reddit-Trac")
     nil))
 
+(defonce ^:private ^:const config
+  (clojure.edn/read-string (slurp "resources/config.edn")))
+
 (defonce ^:const jetty-props
-  (:api-server (clojure.edn/read-string (slurp "resources/config.edn"))))
+  (:api-server config))
+
+(defonce ^:private ^:const uri
+  (:uri config))
 
 ;; To encode Joda objects correctly in JSON response to user
 (extend-protocol cheshire.generate/JSONable
@@ -31,6 +38,8 @@
     (handler request)))
 
 (def app (as-> #'app-routes $
+           (wrap-cors $ :access-control-allow-origin [(re-pattern uri)]
+                      :access-control-allow-methods [:get :put :post :delete])
            ;; (wrap-debug $ "request: ")
            (wrap-json-body $ {:keywords? true})
            (wrap-json-response $)
