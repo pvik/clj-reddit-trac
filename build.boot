@@ -7,6 +7,7 @@
                  [ring/ring-core "1.7.0"]
                  [ring/ring-jetty-adapter "1.7.0"]
                  [ring/ring-json "0.4.0"]
+                 [ring-cors "0.1.12"]
                  [ring-middleware-format "0.7.2"]
                  [javax.servlet/servlet-api "2.5"]
                  [org.clojure/core.async "0.4.474"]
