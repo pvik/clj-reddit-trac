@@ -25,15 +25,19 @@
   TODO send email to validate watch"
   [data]
   (log/debug "create watch" data)
-  (let [watch (db/create-entity :watch-subreddit
-                                (assoc data :active false))]) ;; TODO: lower all string columns
-  ;; send email
-  (notify/send-mail {:to (:email watch)
-                     :subject "New Reddit-Trac Created"
-                     :body (template/watch-validate
-                            {:token (gen-token (:email watch))
-                             :watch watch})})
-  (wrap-response watch))
+  (let [d1    (reduce-kv (fn [m k v] (assoc m k (if (and (string? v) (clojure.string/blank? v)) nil v))) {} data) ;; nil any empty strings
+        d2    (reduce-kv (fn [m k v] (assoc m k (if (and v (string? v)) (clojure.string/lower-case v) v))) {} d1) ;; lower-case values
+        d3    (assoc d2 :active false)
+        watch (first (db/create-entity :watch-subreddit
+                                       d3))] 
+    (log/debug "watch:" watch)
+    ;; send email
+    (notify/send-mail {:to (:email data)
+                       :subject "New Reddit-Trac Created"
+                       :body (template/watch-validate
+                              {:token (gen-token (:email data))
+                               :watch watch})})
+    (wrap-response watch)))
 
 (defn validate-watch [id email token]
   (log/debug "validate watch" id email token)
@@ -43,9 +47,10 @@
                         {:id id
                          :active true})
       ;; send email
-      (let [watch (db/get-entity :watch-subreddit [:= :id id])]
+      (let [watch (first (db/get-entity :watch-subreddit [:= :id id]))]
+        (log/debug "watch" watch)
         (notify/send-mail {:to email
-                           :subject "New Reddit-Trac "
+                           :subject "New Reddit-Trac"
                            :body (template/watch-success
                                   {:token (gen-token (:email watch))
                                    :watch watch})}))
@@ -76,4 +81,13 @@
       (db/delete-entity :watch-subreddit id)
       (wrap-response {:message "ok"}))
     (wrap-response "invalid token" 401 :error)))
+
+(defn manage-watch [email]
+  (log/debug "manage watch" email)
+  (notify/send-mail {:to email
+                     :subject "Manage Reddit-Tracs"
+                     :body (template/manage-watch
+                            {:email email
+                             :token (gen-token email)})})
+  (wrap-response {:message "ok"}))
 

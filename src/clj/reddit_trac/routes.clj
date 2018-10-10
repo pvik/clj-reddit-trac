@@ -17,6 +17,8 @@
            ;; READ
            (GET "/watch" [token email]
                 (api/get-watch :email email token))
+           (GET "/watch/manage" [email]
+                (api/manage-watch email))
            (GET "/watch/:id{[0-9]+}" [token id :<< h/as-int]
                 (api/get-watch :id id token))
            ;; UPDATE
