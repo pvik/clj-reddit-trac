@@ -91,7 +91,9 @@
         matches        (for [sr subreddits] (trac-by-subreddit sr))
         merged-matches (reduce
                         (fn [m1 m2]
-                          (merge-map m1 m2))
+                          (merge-with #(merge-with into % %2) m1 m2)
+                          ;;(merge-map m1 m2)
+                          )
                         (first matches) (rest matches))
         _ (clojure.pprint/pprint merged-matches)]    
     (spit "resources/cache.edn" (pr-str @subreddit-before-name))
