@@ -19,5 +19,5 @@
         postal-response   (if (nil? (:host email-server))
                             ;; nil email-server => use local sendmail
                             (postal/send-message email-msg)
-                            (postal/send-message (dissoc :from email-server) email-msg))]
+                            (postal/send-message (dissoc email-server :from) email-msg))]
     (log/info postal-response)))
