@@ -48,11 +48,6 @@
     (assoc m eml {:watches (apply conj m-watches ws)
                   :posts (apply conj m-posts ps)})))
 
-(defn merge-map [m1 m2]
-  (reduce
-   #(merge-map-by-email % [%2 (:watches (%2 m2)) (:posts (%2 m2))])
-   m1 (keys m2)))
-
 (defn trac-by-subreddit [subreddit]
   (let [kw-subreddit (keyword subreddit)
         posts (r/get-subreddit-posts
@@ -91,9 +86,7 @@
         matches        (for [sr subreddits] (trac-by-subreddit sr))
         merged-matches (reduce
                         (fn [m1 m2]
-                          (merge-with #(merge-with into % %2) m1 m2)
-                          ;;(merge-map m1 m2)
-                          )
+                          (merge-with #(merge-with into % %2) m1 m2))
                         (first matches) (rest matches))
         _ (clojure.pprint/pprint merged-matches)]    
     (spit "resources/cache.edn" (pr-str @subreddit-before-name))
